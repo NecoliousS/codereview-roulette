@@ -1,15 +1,35 @@
-const CLIENT_ID = 'Ov23liQGx3lVxxhaCytQ';
-const BACKEND_URL = 'https://YOUR_VERCEL_PROJECT.vercel.app'; // We'll create this next
-const FRONTEND_URL = 'https://necoliouss.github.io/codereview-roulette';
+// Your GitHub username and repo name
+const REPO_OWNER = 'necoliouss';
+const REPO_NAME = 'codereview-roulette';
 
 function login() {
-    // Generate random state for security
-    const state = Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('oauth_state', state);
+    // Get the token from the input box
+    const tokenInput = document.getElementById('token-input');
+    const token = tokenInput ? tokenInput.value.trim() : prompt("Enter your GitHub Personal Access Token:");
     
-    // Redirect to GitHub OAuth
-    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${BACKEND_URL}/callback&scope=repo,gist&state=${state}`;
-    window.location.href = githubUrl;
+    if (!token) {
+        alert('Please enter a token');
+        return;
+    }
+    
+    // Test the token by trying to get user info
+    fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `token ${token}` }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Invalid token');
+        return res.json();
+    })
+    .then(user => {
+        // Save to browser storage
+        localStorage.setItem('github_token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        alert(`Welcome, ${user.login}!`);
+        location.reload();
+    })
+    .catch(err => {
+        alert('Error: ' + err.message + '. Make sure you generated a token with "repo" scope.');
+    });
 }
 
 function logout() {
@@ -22,30 +42,25 @@ function getToken() {
     return localStorage.getItem('github_token');
 }
 
-// Check auth status on load
-window.addEventListener('load', async () => {
+// When page loads, check if already logged in
+window.addEventListener('load', () => {
     const token = getToken();
-    if (token) {
-        // Validate token and get user info
-        try {
-            const res = await fetch('https://api.github.com/user', {
-                headers: { 'Authorization': `token ${token}` }
-            });
-            if (res.ok) {
-                const user = await res.json();
-                localStorage.setItem('user', JSON.stringify(user));
-                
-                document.getElementById('login-btn').style.display = 'none';
-                document.getElementById('user-info').style.display = 'block';
-                document.getElementById('username').textContent = user.login;
-                document.getElementById('avatar').src = user.avatar_url;
-                document.getElementById('app').style.display = 'block';
-            } else {
-                // Token expired/invalid
-                logout();
-            }
-        } catch (e) {
-            logout();
-        }
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && user.login) {
+        // Hide login box, show user info
+        const loginBox = document.getElementById('login-box');
+        const userInfo = document.getElementById('user-info');
+        const app = document.getElementById('app');
+        
+        if (loginBox) loginBox.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'flex';
+        if (app) app.style.display = 'block';
+        
+        // Fill in user details
+        const avatar = document.getElementById('avatar');
+        const username = document.getElementById('username');
+        if (avatar) avatar.src = user.avatar_url;
+        if (username) username.textContent = user.login;
     }
 });
