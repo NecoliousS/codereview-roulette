@@ -8,47 +8,71 @@
 </head>
 <body>
     <div class="container">
-        <h1>CodeReview Roulette</h1>
-        
-        <!-- LOGIN SECTION -->
-        <div id="login-box">
-            <p>Enter your GitHub Personal Access Token:</p>
-            <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" style="width: 300px; padding: 10px;">
-            <button onclick="login()" style="margin-left: 10px;">Connect</button>
-            <p style="font-size: 12px; margin-top: 10px;">
-                <a href="https://github.com/settings/tokens/new?description=CodeReview%20Roulette&scopes=repo,gist" target="_blank">
-                    Click here to get your token
-                </a> 
-                (check "repo" and "gist" boxes)
-            </p>
-        </div>
+        <header>
+            <h1>CodeReview Roulette</h1>
+            <div id="auth-section">
+                <div id="login-box">
+                    <input type="password" id="token-input" placeholder="Enter GitHub Token (ghp_...)">
+                    <button onclick="login()">Connect</button>
+                </div>
+                <div id="user-info" style="display:none;">
+                    <img id="avatar" src="" width="40">
+                    <span id="username"></span>
+                    <button onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </header>
 
-        <!-- USER INFO (hidden until logged in) -->
-        <div id="user-info" style="display: none; margin: 20px 0;">
-            <img id="avatar" src="" width="40" style="border-radius: 50%; vertical-align: middle;">
-            <span id="username" style="margin-left: 10px; font-weight: bold;"></span>
-            <button onclick="logout()" style="margin-left: 20px;">Logout</button>
-        </div>
+        <!-- NAVIGATION (shown after login) -->
+        <nav id="main-nav" style="display:none;">
+            <button class="nav-btn active" onclick="showPage('submit')">Submit Code</button>
+            <button class="nav-btn" onclick="showPage('browse')">Review Random Code</button>
+            <button class="nav-btn" onclick="showPage('dashboard')">My Dashboard</button>
+        </nav>
 
-        <!-- APP CONTENT (hidden until logged in) -->
-        <div id="app" style="display: none; margin-top: 30px;">
-            <h2>Request a Code Review</h2>
-            <form id="review-form" style="margin-top: 20px;">
-                <input type="text" id="title" placeholder="What needs review?" required style="width: 100%; margin-bottom: 10px; padding: 8px;"><br>
-                <select id="language" required style="padding: 8px; margin-bottom: 10px;">
+        <!-- PAGE 1: SUBMIT CODE -->
+        <section id="page-submit" class="page">
+            <h2>Submit Code for Review</h2>
+            <form id="review-form">
+                <input type="text" id="title" placeholder="Title (e.g., 'React useEffect issue')" required>
+                <textarea id="description" placeholder="Describe what you need help with (optional)..." rows="3"></textarea>
+                <select id="language" required>
                     <option value="">Select Language</option>
                     <option value="javascript">JavaScript</option>
                     <option value="python">Python</option>
                     <option value="react">React</option>
-                </select><br>
-                <textarea id="code" placeholder="Paste your code here..." rows="10" style="width: 100%; padding: 8px;" required></textarea><br>
-                <button type="submit" style="margin-top: 10px;">Submit for Review</button>
+                    <option value="css">CSS</option>
+                    <option value="html">HTML</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea id="code" placeholder="Paste your code here..." rows="12" required></textarea>
+                <button type="submit">Submit for Review</button>
             </form>
-        </div>
+        </section>
+
+        <!-- PAGE 2: BROWSE/REVIEW OTHERS -->
+        <section id="page-browse" class="page" style="display:none;">
+            <h2>Review Someone's Code</h2>
+            <button onclick="loadRandomCode()" class="big-btn">🎲 Get Random Code to Review</button>
+            <div id="random-code-display" style="margin-top:20px;"></div>
+        </section>
+
+        <!-- PAGE 3: DASHBOARD -->
+        <section id="page-dashboard" class="page" style="display:none;">
+            <div class="dashboard-grid">
+                <div class="dash-column">
+                    <h3>My Submissions</h3>
+                    <div id="my-submissions">Loading...</div>
+                </div>
+                <div class="dash-column">
+                    <h3>My Reviews (Given)</h3>
+                    <div id="my-reviews">Loading...</div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script src="js/auth.js"></script>
-    <script src="js/github-api.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
