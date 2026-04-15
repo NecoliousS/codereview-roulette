@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/callback", "dest": "/api/callback.js" }
+  ]
+}
